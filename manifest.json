@@ -1,0 +1,23 @@
+{
+  "description": "Browsing the internet but you are in a bathroom at a party",
+  "homepage_url": "https://github.com/DropSnorz/BathroomAtAParty",
+  "manifest_version": 2,
+  "name": "BathroomAtAParty",
+  "icons": {
+      "128": "icon.svg"
+  },
+  "version": "1.0",
+  "browser_action": {
+    "default_title": "Bathroom At A Party",
+    "default_popup": "main.html",
+    "browser_style": true,
+    "default_icon": {
+        "128": "icon.svg"
+    }
+  },
+  "permissions": [
+    "storage",
+    "<all_urls>",
+    "activeTab"
+  ]
+}
