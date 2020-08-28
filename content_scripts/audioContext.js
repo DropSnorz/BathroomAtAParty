@@ -16,25 +16,30 @@
     return allMediaSources;
   }
 
-  const createFilter = (source, audioContext) => {
-    console.log('createFilter');
-    console.log(source);
-    lowPassFilter = audioContext.createBiquadFilter();
-    source.connect(lowPassFilter);
-    lowPassFilter.type = "lowpass";
-    lowPassFilter.connect(audioContext.destination);
-
+  const createMediaAudioChain = (media, audioContext) => {
+    let lowPassFilter = createFilter(audioContext);
+    return {
+      media: media,
+      lowPassFilter: lowPassFilter,
+    }
   }
 
-  const updateLowPassFilter = (input) => {
-    // Reverse input scale. Cut lowest frequency on high values.
-    let frequency = -input + 100;
-    frequency = logScaleRange(frequency, 200, 20000)
+  const activateMediaAudioChain = (mediaAudioChain, audioContext) => {
+    mediaAudioChain.media.disconnect();
+    mediaAudioChain.media.connect(mediaAudioChain.lowPassFilter);
+    mediaAudioChain.lowPassFilter.connect(audioContext.destination);
+  }
 
-    console.log('lowpass freq: ', frequency);
+  const deactivateMediaAudioChain = (mediaAudioChain, audioContext) => {
+    mediaAudioChain.media.disconnect();
+    mediaAudioChain.lowPassFilter.disconnect();
+    mediaAudioChain.media.connect(audioContext.destination);
+  }
+
+  const createFilter = (audioContext) => {
+    let lowPassFilter = audioContext.createBiquadFilter();
     lowPassFilter.type = "lowpass";
-    lowPassFilter.frequency.value = frequency;
-    lowPassFilter.Q.value = 1;
+    return lowPassFilter;
   }
 
   if (window.hasRun) {
@@ -43,13 +48,13 @@
   window.hasRun = true;
 
   let audioContext = undefined;
-  let lowPassFilter = null;
-  let mediaSources = undefined;
+  let mediaAudioChains = [];
 
-  function activate(message) {
-    console.log('activate', message);
-    console.log(mediaSources);
-
+  /**
+   * Activates or create audio processing chains an all current page medias
+   */
+  function activate() {
+    // Retireve or preload audio context
     if (!audioContext) {
       console.log('Defining AudioContext');
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -57,29 +62,47 @@
       console.log('Retrieving already defined AudioContext');
     }
 
-    if (!mediaSources) {
-      console.log('Creating mediaSources');
-      mediaSources = getMediaSources(audioContext);
-    } else {
-      console.log('Retrieving already defined media sources');
-    }
-
-    mediaSources.forEach((mediaElement) => {
-      if (!lowPassFilter) {
-        createFilter(mediaElement, audioContext);
+    let mediaSources = getMediaSources(audioContext);
+    // Creates an audio processing chain for each new media element.
+    mediaSources.forEach((mediaSource) => {
+      if (mediaAudioChains.filter(c => c.media.mediaElement == mediaSource.mediaElement).length == 0) {
+        mediaAudioChains.push(createMediaAudioChain(mediaSource, audioContext));
       }
-      console.log('Reactivating Filter')
     });
+
+    // Activates all audio processing chains
+    for (mediaAudioChain of mediaAudioChains) {
+      activateMediaAudioChain(mediaAudioChain, audioContext);
+    }
 
   }
 
+  /**
+   * Deactivates all audio processing chains
+   */
   function deactivate() {
-    console.log('deactivate');
-    if (!lowPassFilter) {
-      return
+    for (mediaAudioChain of mediaAudioChains) {
+      deactivateMediaAudioChain(mediaAudioChain, audioContext);
     }
-    //TODO: remove lowPassFilter from audio chain.
-    lowPassFilter.frequency.value = 20000;
+  }
+
+  /**
+   * Update low pass filters parameters in each processing chains 
+   * based on a raw input value.
+   * @param {*} input 
+   */
+  function updateLowPassFilter(input) {
+    // Reverse input scale. Cut lowest frequency on high values.
+    let frequency = -input + 100;
+    frequency = logScaleRange(frequency, 200, 20000)
+
+    console.log('lowpass freq: ', frequency);
+    for (mediaAudioChain of mediaAudioChains) {
+      console.log(mediaAudioChain);
+      mediaAudioChain.lowPassFilter.type = "lowpass";
+      mediaAudioChain.lowPassFilter.frequency.value = frequency;
+      mediaAudioChain.lowPassFilter.Q.value = 1;
+    }
   }
 
   function logScaleRange(value, minOutput, maxOutput) {
@@ -98,9 +121,8 @@
   }
 
   browser.runtime.onMessage.addListener((message) => {
-    console.log(message)
     if (message.command === 'updateOnOff' && message.value == true) {
-      activate(message);
+      activate();
     } else if (message.command === 'updateOnOff' && message.value == false) {
       deactivate();
     } else if (message.command === 'updateDryWet') {
