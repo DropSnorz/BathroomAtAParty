@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "name": "BathroomAtAParty",
   "icons": {
-      "128": "icon.svg"
+      "128": "./icons/icon.svg"
   },
   "version": "1.0",
   "browser_action": {
@@ -12,7 +12,7 @@
     "default_popup": "main.html",
     "browser_style": true,
     "default_icon": {
-        "128": "icon.svg"
+        "128": "./icons/icon.svg"
     }
   },
   "permissions": [

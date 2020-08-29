@@ -41,13 +41,19 @@ async function initListeners() {
   async function toggleOnOff(event) {
     browser.tabs.query({ active: true, currentWindow: true })
       .then(function (tabs) {
+        let tabId = tabs[0].id;
         browser.storage.local.get('tabsState').then(function (state) {
-          let tabId = tabs[0].id;
           if (tabId in state.tabsState) {
             state.tabsState[tabId].onoff = event.target.checked;
             browser.storage.local.set({tabsState: state.tabsState});
           }
         });
+
+        if(event.target.checked) {
+          browser.browserAction.setIcon({path: "icons/icon_active.svg", tabId: tabId});
+        } else {
+          browser.browserAction.setIcon({path: "icons/icon.svg", tabId: tabId});
+        }
 
         browser.tabs.sendMessage(tabs[0].id, {
           command: "updateOnOff",
