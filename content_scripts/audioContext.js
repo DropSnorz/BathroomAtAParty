@@ -122,6 +122,16 @@
     }
   }
 
+  /**
+   * Update reverb wet signal amount based on a raw input value.
+   * @param {*} input 
+   */
+  function updateReverbAmount(input) {
+    for(mediaAudioChain of mediaAudioChains) {
+      mediaAudioChain.reverbWetSignal.gain.value = input / 100
+    }
+  }
+
   function logScaleRange(value, minOutput, maxOutput) {
     let minInput = 0;
     let maxInput = 100;
@@ -144,6 +154,7 @@
       deactivate();
     } else if (message.command === 'updateDryWet') {
       updateLowPassFilter(message.value);
+      updateReverbAmount(message.value);
     }
   });
 })();
