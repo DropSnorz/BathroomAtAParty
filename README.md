@@ -1,4 +1,6 @@
-# BathroomAtAParty
+<h1> <img height="50px" src="https://dropsnorz.com/projects/bathroom/bathroom.gif" style="float:left;" />  BathroomAtAParty </h1>
+
+A browser extension to apply *"but you are in a bathroom at a party"* aesthetic effect.
 
 ## Development setup
 
