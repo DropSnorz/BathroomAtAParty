@@ -101,7 +101,9 @@ function reportExecuteScriptError(error) {
  * and add a click handler.
  * If we couldn't inject the script, handle the error.
  */
-browser.tabs.executeScript({ file: "/content_scripts/audioContext.js" })
+browser.tabs.executeScript({ file: "/lib/Reverbjs/reverb.js" })
+  .then(browser.tabs.executeScript({ file: "/lib/Reverbjs/impulse/DomesticLivingRoom.wav.base64.js" }))
+  .then(browser.tabs.executeScript({ file: "/content_scripts/audioContext.js" }))
   .then(initPopup)
   .then(initListeners)
   .catch(reportExecuteScriptError);

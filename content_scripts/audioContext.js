@@ -17,22 +17,32 @@
   }
 
   const createMediaAudioChain = (media, audioContext) => {
-    let lowPassFilter = createFilter(audioContext);
     return {
       media: media,
-      lowPassFilter: lowPassFilter,
+      lowPassFilter: createFilter(audioContext),
+      reverb: createReverb(audioContext),
+      reverbDrySignal: audioContext.createGain(),
+      reverbWetSignal: audioContext.createGain()
     }
   }
 
   const activateMediaAudioChain = (mediaAudioChain, audioContext) => {
     mediaAudioChain.media.disconnect();
     mediaAudioChain.media.connect(mediaAudioChain.lowPassFilter);
-    mediaAudioChain.lowPassFilter.connect(audioContext.destination);
+    mediaAudioChain.lowPassFilter.connect(mediaAudioChain.reverbDrySignal);
+    mediaAudioChain.lowPassFilter.connect(mediaAudioChain.reverb);
+    mediaAudioChain.reverb.connect(mediaAudioChain.reverbWetSignal);
+    mediaAudioChain.reverbDrySignal.connect(audioContext.destination);
+    mediaAudioChain.reverbWetSignal.connect(audioContext.destination);
+
   }
 
   const deactivateMediaAudioChain = (mediaAudioChain, audioContext) => {
     mediaAudioChain.media.disconnect();
     mediaAudioChain.lowPassFilter.disconnect();
+    mediaAudioChain.reverb.disconnect();
+    mediaAudioChain.reverbDrySignal.disconnect();
+    mediaAudioChain.reverbWetSignal.disconnect();
     mediaAudioChain.media.connect(audioContext.destination);
   }
 
@@ -40,6 +50,11 @@
     let lowPassFilter = audioContext.createBiquadFilter();
     lowPassFilter.type = "lowpass";
     return lowPassFilter;
+  }
+
+  const createReverb = (audioContext) => {
+    let reverb = audioContext.createReverbFromBase64(DomesticLivingRoom);
+    return reverb;
   }
 
   if (window.hasRun) {
@@ -58,6 +73,8 @@
     if (!audioContext) {
       console.log('Defining AudioContext');
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      // Extend audioContext with reverbjs
+      reverbjs.extend(audioContext);
     } else {
       console.log('Retrieving already defined AudioContext');
     }
@@ -105,6 +122,16 @@
     }
   }
 
+  /**
+   * Update reverb wet signal amount based on a raw input value.
+   * @param {*} input 
+   */
+  function updateReverbAmount(input) {
+    for(mediaAudioChain of mediaAudioChains) {
+      mediaAudioChain.reverbWetSignal.gain.value = input / 100
+    }
+  }
+
   function logScaleRange(value, minOutput, maxOutput) {
     let minInput = 0;
     let maxInput = 100;
@@ -127,6 +154,7 @@
       deactivate();
     } else if (message.command === 'updateDryWet') {
       updateLowPassFilter(message.value);
+      updateReverbAmount(message.value);
     }
   });
 })();
