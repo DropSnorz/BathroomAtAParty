@@ -24,6 +24,7 @@ async function initPopup() {
       }
       document.getElementById('onoff').checked = tabsState[tabId].onoff;
       document.getElementById('drywet').value = tabsState[tabId].drywet;
+      updateOnOffDisplay(tabsState[tabId].onoff);
 
     })
     .catch((error) => {
@@ -54,6 +55,8 @@ async function initListeners() {
         } else {
           browser.browserAction.setIcon({path: "icons/icon.svg", tabId: tabId});
         }
+
+        updateOnOffDisplay(event.target.checked);
 
         browser.tabs.sendMessage(tabs[0].id, {
           command: "updateOnOff",
@@ -94,6 +97,19 @@ async function initListeners() {
 
 function reportExecuteScriptError(error) {
   console.error(`Failed to execute content script: ${error}`);
+}
+
+function updateOnOffDisplay(isActivate){
+  const title = document.querySelector("#title");
+  const toggleButton = document.querySelector("#toggleButton");
+  if(isActivate) {
+    title.classList.add("on");
+    toggleButton.classList.add("on");
+  } else {
+    title.classList.remove("on");
+    toggleButton.classList.remove("on");
+  }
+
 }
 
 /**

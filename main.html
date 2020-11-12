@@ -8,16 +8,23 @@
 </head>
 
 <body>
-  <span><strong> Bathroom </strong> at a party</span>
-  <hr />
-  <div class="input-group">
-    <input type="checkbox" id="onoff" name="oneoff">
-    <label for="onoff">Bathroom-ize audio</label>
-  </div>
-  <div class="input-group">
-    <label for="drywet">Dry / Wet</label>
-    <input type="range" id="drywet" name="drywet" min="0" max="100">
-  </div>
+  <div class="wrapper">
+    <h1 id="title">
+      <span>B</span>
+      <span>A</span>
+      <span>T</span>
+      <span>H</span>
+      <span>R</span>
+      <span>O</span>
+      <span>O</span>
+      <span>M</span>
+    </h1>
+  <label for="onoff">
+    <input type="checkbox" id="onoff" name="onoff" style="display:none;">
+    <div id="toggleButton"></div>
+  </label>
+  <input type="range" class= "range" id="drywet" name="drywet" min="0" max="100">
+</div>
   <script src="main.js"></script>
 </body>
 
