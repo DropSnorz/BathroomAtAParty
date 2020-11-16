@@ -1,5 +1,3 @@
-console.log('Starting Extension');
-
 /**
  * Bootsrap extension state and sync UI components display with 
  * local state values.
@@ -10,17 +8,13 @@ async function initPopup() {
       let tabId = tabs[0].id;
       let state = await browser.storage.local.get('tabsState');
       let tabsState = state.tabsState;
-      console.log(tabsState)
 
       if (!tabsState) {
-        console.log("init full state");
         tabsState = {};
       }
-      console.log(tabsState[tabId]);
       if (!(tabId in tabsState)) {
-        console.log("init tab state");
-        tabsState[tabId] = {onoff: false, drywet: 0 };
-        browser.storage.local.set({tabsState: tabsState});
+        tabsState[tabId] = { onoff: false, drywet: 0 };
+        browser.storage.local.set({ tabsState: tabsState });
       }
       document.getElementById('onoff').checked = tabsState[tabId].onoff;
       document.getElementById('drywet').value = tabsState[tabId].drywet;
@@ -33,10 +27,7 @@ async function initPopup() {
 
 }
 
-/**
- * Listen for clicks on the buttons, and send the appropriate message to
- * the content script in the page.
- */
+
 async function initListeners() {
 
   async function toggleOnOff(event) {
@@ -46,14 +37,14 @@ async function initListeners() {
         browser.storage.local.get('tabsState').then(function (state) {
           if (tabId in state.tabsState) {
             state.tabsState[tabId].onoff = event.target.checked;
-            browser.storage.local.set({tabsState: state.tabsState});
+            browser.storage.local.set({ tabsState: state.tabsState });
           }
         });
 
-        if(event.target.checked) {
-          browser.browserAction.setIcon({path: "icons/icon_active.svg", tabId: tabId});
+        if (event.target.checked) {
+          browser.browserAction.setIcon({ path: "icons/icon_active.svg", tabId: tabId });
         } else {
-          browser.browserAction.setIcon({path: "icons/icon.svg", tabId: tabId});
+          browser.browserAction.setIcon({ path: "icons/icon.svg", tabId: tabId });
         }
 
         updateOnOffDisplay(event.target.checked);
@@ -75,7 +66,7 @@ async function initListeners() {
           let tabId = tabs[0].id;
           if (tabId in state.tabsState) {
             state.tabsState[tabId].drywet = event.target.value;
-            browser.storage.local.set({tabsState: state.tabsState});
+            browser.storage.local.set({ tabsState: state.tabsState });
           }
         });
 
@@ -89,33 +80,31 @@ async function initListeners() {
       });
   }
 
-  const onOff = document.getElementById('onoff');
-  const drywet = document.getElementById('drywet');
+  const onOff = document.querySelector('#onoff');
+  const drywet = document.querySelector('#drywet');
   onOff.addEventListener('change', toggleOnOff, false);
   drywet.addEventListener('change', updateDryWet, false);
 }
 
-function reportExecuteScriptError(error) {
-  console.error(`Failed to execute content script: ${error}`);
-}
-
-function updateOnOffDisplay(isActivate){
+function updateOnOffDisplay(isActivate) {
   const title = document.querySelector("#title");
   const toggleButton = document.querySelector("#toggleButton");
-  if(isActivate) {
+  if (isActivate) {
     title.classList.add("on");
     toggleButton.classList.add("on");
   } else {
     title.classList.remove("on");
     toggleButton.classList.remove("on");
   }
+}
 
+function reportExecuteScriptError(error) {
+  console.error(`Failed to execute content script: ${error}`);
 }
 
 /**
  * When the popup loads, inject a content script into the active tab,
- * and add a click handler.
- * If we couldn't inject the script, handle the error.
+ * init tab state and add event listeners. 
  */
 browser.tabs.executeScript({ file: "/lib/Reverbjs/reverb.js" })
   .then(browser.tabs.executeScript({ file: "/lib/Reverbjs/impulse/DomesticLivingRoom.wav.base64.js" }))

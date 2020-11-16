@@ -2,6 +2,8 @@
 
 A browser extension to apply *"but you are in a bathroom at a party"* aesthetic effect.
 
+![screenshot](https://dropsnorz.com/projects/bathroom/bathroom-screen.png)
+
 ## Development setup
 
 ```sh
