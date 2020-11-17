@@ -1,21 +1,27 @@
 (function main() {
 
+  /**
+   * Returns media sources in the document.
+   * Media sources are created from video and audio element in DOM.
+   * @param {*} audioContext 
+   */
   const getMediaSources = (audioContext) => {
     let videos = Array.from(document.getElementsByTagName('video'));
     let audio = Array.from(document.getElementsByTagName('audio'));
-    console.log('videos ', videos);
-    console.log('audio ', audio);
-
     let all = videos.concat(audio);
 
     let allMediaSources = all.map((mediaElement) => {
       mediaElement.crossOrigin = "anonymous";
       return audioContext.createMediaElementSource(mediaElement);
     });
-    console.log(allMediaSources)
     return allMediaSources;
   }
 
+  /**
+   * Creates an audio processing chain behind the given media source.
+   * @param {*} media 
+   * @param {*} audioContext 
+   */
   const createMediaAudioChain = (media, audioContext) => {
     return {
       media: media,
@@ -26,6 +32,12 @@
     }
   }
 
+  /**
+   * Activates an audio processing by chaining all nodes input and output from
+   * the root media and effects to the audioContext destination.
+   * @param {*} mediaAudioChain 
+   * @param {*} audioContext 
+   */
   const activateMediaAudioChain = (mediaAudioChain, audioContext) => {
     mediaAudioChain.media.disconnect();
     mediaAudioChain.media.connect(mediaAudioChain.lowPassFilter);
@@ -37,6 +49,12 @@
 
   }
 
+  /**
+   * Deactivates an audio prcessing chain by remove link between audio node and restore
+   * a connection between media source and audioContext destination. 
+   * @param {*} mediaAudioChain 
+   * @param {*} audioContext 
+   */
   const deactivateMediaAudioChain = (mediaAudioChain, audioContext) => {
     mediaAudioChain.media.disconnect();
     mediaAudioChain.lowPassFilter.disconnect();
@@ -66,17 +84,14 @@
   let mediaAudioChains = [];
 
   /**
-   * Activates or create audio processing chains an all current page medias
+   * Activates or create audio processing chains in the current page.
    */
   function activate() {
     // Retireve or preload audio context
     if (!audioContext) {
-      console.log('Defining AudioContext');
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       // Extend audioContext with reverbjs
       reverbjs.extend(audioContext);
-    } else {
-      console.log('Retrieving already defined AudioContext');
     }
 
     let mediaSources = getMediaSources(audioContext);
@@ -104,7 +119,7 @@
   }
 
   /**
-   * Update low pass filters parameters in each processing chains 
+   * Updates low pass filters parameters in each processing chains 
    * based on a raw input value.
    * @param {*} input 
    */
@@ -123,11 +138,11 @@
   }
 
   /**
-   * Update reverb wet signal amount based on a raw input value.
+   * Updates reverb wet signal amount in processing chains based on a raw input value.
    * @param {*} input 
    */
   function updateReverbAmount(input) {
-    for(mediaAudioChain of mediaAudioChains) {
+    for (mediaAudioChain of mediaAudioChains) {
       mediaAudioChain.reverbWetSignal.gain.value = input / 100
     }
   }
