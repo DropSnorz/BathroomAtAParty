@@ -164,3 +164,5 @@ var reverbjs = {
     };
   }
 };
+
+export default reverbjs;
