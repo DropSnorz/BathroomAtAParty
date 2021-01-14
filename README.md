@@ -7,10 +7,16 @@ A browser extension to apply *"but you are in a bathroom at a party"* aesthetic 
 ## Development setup
 
 ```sh
-# Install web-ext globally
-npm install -g web-ext
+yarn install
 
-# Run extension in firefox and chrome
-web-ext run -t firefox-desktop -t chromium
+# Run extension in firefox
+yarn run dev:firefox
+
+# Run the extension in chrome
+yarn run dev:chrome
+
+# Build extension files
+yarn build 
+
 
 ```
