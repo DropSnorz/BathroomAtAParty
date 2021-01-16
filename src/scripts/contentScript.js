@@ -1,6 +1,14 @@
+import browser from 'webextension-polyfill'
 import reverbjs from "./lib/Reverbjs/reverb.js"
 import DomesticLivingRoom from "./lib/Reverbjs/impulse/DomesticLivingRoom.wav.base64.js"
 
+var audioContext = undefined;
+var mediaAudioChains = [];
+
+// Audio elements and sources are cached to workaround an issue
+// with chrome WebAudio API implementation:
+// Issue 429204: Calling createMediaElementSource() twice with the same HTMLMediaElement throws InvalidStateError 
+var mediaSourcesCache = [];
 
 /**
  * Returns media sources in the document.
@@ -14,9 +22,34 @@ const getMediaSources = (audioContext) => {
 
   let allMediaSources = all.map((mediaElement) => {
     mediaElement.crossOrigin = "anonymous";
-    return audioContext.createMediaElementSource(mediaElement);
+    return getOrCreateMediaElementFromSource(mediaElement, audioContext);
   });
   return allMediaSources;
+}
+
+/**
+ * Returns an audioSource from a DOM mediaElement. The audioSource is retrieved from cache 
+ * if it has previsoulsy been created. If an audioSource has never been initialized for the 
+ * given element, it's created on the given audioContext and added to the cache.
+ * @param {*} mediaElement 
+ * @param {*} audioContext 
+ */
+const getOrCreateMediaElementFromSource = (mediaElement, audioContext) => {
+
+  // Iterate over cache entries to retrieve audio source for a given element
+  for (let [i, cacheEntry] of mediaSourcesCache.entries()) {
+    if (cacheEntry.mediaElement.isEqualNode(mediaElement)) {
+      return cacheEntry.audioSource;
+    }
+  }
+
+  // Otherwise, create audio source from DOM element and addit to cache
+  let newCacheEntry = {
+    mediaElement: mediaElement,
+    audioSource: audioContext.createMediaElementSource(mediaElement)
+  }
+  mediaSourcesCache.push(newCacheEntry);
+  return newCacheEntry.audioSource;
 }
 
 /**
@@ -77,9 +110,6 @@ const createReverb = (audioContext) => {
   return reverb;
 }
 
-var audioContext = undefined;
-var mediaAudioChains = [];
-
 /**
  * Activates or create audio processing chains in the current page.
  */
@@ -92,6 +122,7 @@ function activate() {
   }
 
   let mediaSources = getMediaSources(audioContext);
+
   // Creates an audio processing chain for each new media element.
   mediaSources.forEach((mediaSource) => {
     if (mediaAudioChains.filter(c => c.media.mediaElement == mediaSource.mediaElement).length == 0) {
@@ -152,7 +183,6 @@ function logScaleRange(value, minOutput, maxOutput) {
 }
 
 browser.runtime.onMessage.addListener((message) => {
-  console.log("message received")
   if (message.command === 'updateOnOff' && message.value == true) {
     activate();
   } else if (message.command === 'updateOnOff' && message.value == false) {
