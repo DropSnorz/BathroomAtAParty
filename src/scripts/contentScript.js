@@ -15,7 +15,7 @@ var mediaSourcesCache = [];
  * Media sources are created from video and audio element in DOM.
  * @param {*} audioContext 
  */
-const getMediaSources = (audioContext) => {
+function getMediaSources(audioContext) {
   let videos = Array.from(document.getElementsByTagName('video'));
   let audio = Array.from(document.getElementsByTagName('audio'));
   let all = videos.concat(audio);
@@ -34,7 +34,7 @@ const getMediaSources = (audioContext) => {
  * @param {*} mediaElement 
  * @param {*} audioContext 
  */
-const getOrCreateMediaElementFromSource = (mediaElement, audioContext) => {
+function getOrCreateMediaElementFromSource(mediaElement, audioContext) {
 
   // Iterate over cache entries to retrieve audio source for a given element
   for (let [i, cacheEntry] of mediaSourcesCache.entries()) {
@@ -57,7 +57,7 @@ const getOrCreateMediaElementFromSource = (mediaElement, audioContext) => {
  * @param {*} media 
  * @param {*} audioContext 
  */
-const createMediaAudioChain = (media, audioContext) => {
+function createMediaAudioChain(media, audioContext) {
   return {
     media: media,
     lowPassFilter: createFilter(audioContext),
@@ -73,7 +73,7 @@ const createMediaAudioChain = (media, audioContext) => {
  * @param {*} mediaAudioChain 
  * @param {*} audioContext 
  */
-const activateMediaAudioChain = (mediaAudioChain, audioContext) => {
+function activateMediaAudioChain(mediaAudioChain, audioContext) {
   mediaAudioChain.media.disconnect();
   mediaAudioChain.media.connect(mediaAudioChain.lowPassFilter);
   mediaAudioChain.lowPassFilter.connect(mediaAudioChain.reverbDrySignal);
@@ -90,7 +90,7 @@ const activateMediaAudioChain = (mediaAudioChain, audioContext) => {
  * @param {*} mediaAudioChain 
  * @param {*} audioContext 
  */
-const deactivateMediaAudioChain = (mediaAudioChain, audioContext) => {
+function deactivateMediaAudioChain(mediaAudioChain, audioContext) {
   mediaAudioChain.media.disconnect();
   mediaAudioChain.lowPassFilter.disconnect();
   mediaAudioChain.reverb.disconnect();
@@ -99,13 +99,13 @@ const deactivateMediaAudioChain = (mediaAudioChain, audioContext) => {
   mediaAudioChain.media.connect(audioContext.destination);
 }
 
-const createFilter = (audioContext) => {
+function createFilter(audioContext) {
   let lowPassFilter = audioContext.createBiquadFilter();
   lowPassFilter.type = "lowpass";
   return lowPassFilter;
 }
 
-const createReverb = (audioContext) => {
+function createReverb(audioContext) {
   let reverb = audioContext.createReverbFromBase64(DomesticLivingRoom);
   return reverb;
 }
