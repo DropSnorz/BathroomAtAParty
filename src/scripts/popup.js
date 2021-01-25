@@ -1,3 +1,7 @@
+
+import browser from 'webextension-polyfill'
+import '../styles/popup.scss'
+
 /**
  * Bootsrap extension state and sync UI components display with 
  * local state values.
@@ -42,9 +46,9 @@ async function initListeners() {
         });
 
         if (event.target.checked) {
-          browser.browserAction.setIcon({ path: "icons/icon_active.svg", tabId: tabId });
+          browser.browserAction.setIcon({ path: "assets/icons/icon_active.svg", tabId: tabId });
         } else {
-          browser.browserAction.setIcon({ path: "icons/icon.svg", tabId: tabId });
+          browser.browserAction.setIcon({ path: "assets/icons/icon.svg", tabId: tabId });
         }
 
         updateOnOffDisplay(event.target.checked);
@@ -98,17 +102,13 @@ function updateOnOffDisplay(isActivate) {
   }
 }
 
-function reportExecuteScriptError(error) {
-  console.error(`Failed to execute content script: ${error}`);
-}
-
 /**
  * When the popup loads, inject a content script into the active tab,
  * init tab state and add event listeners. 
  */
-browser.tabs.executeScript({ file: "/lib/Reverbjs/reverb.js" })
-  .then(browser.tabs.executeScript({ file: "/lib/Reverbjs/impulse/DomesticLivingRoom.wav.base64.js" }))
-  .then(browser.tabs.executeScript({ file: "/content_scripts/audioContext.js" }))
-  .then(initPopup)
-  .then(initListeners)
-  .catch(reportExecuteScriptError);
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initPopup();
+  initListeners();
+})
+

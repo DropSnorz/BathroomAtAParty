@@ -4,20 +4,28 @@
   "manifest_version": 2,
   "name": "BathroomAtAParty",
   "icons": {
-      "128": "./icons/icon.svg"
+      "128": "assets/icons/icon.svg"
   },
   "version": "1.0",
   "browser_action": {
     "default_title": "Bathroom At A Party",
-    "default_popup": "main.html",
+    "default_popup": "popup.html",
     "browser_style": true,
     "default_icon": {
-        "128": "./icons/icon.svg"
+        "128": "assets/icons/icon.svg"
     }
   },
   "permissions": [
     "storage",
     "<all_urls>",
     "activeTab"
-  ]
+  ],
+ "content_scripts": [{
+    "matches": [
+      "<all_urls>"
+    ],
+    "js": [
+      "js/contentScript.bundle.js"
+    ]
+  }]
 }
